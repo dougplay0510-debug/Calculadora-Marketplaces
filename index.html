@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Precificação 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222c;
+    --border: #2e2e3a;
+    --accent: #f5a623;
+    --accent2: #e85d04;
+    --green: #2dd4a0;
+    --red: #f43f5e;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --ml-color: #ffe600;
+    --shopee-color: #ff5722;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .header {
+    text-align: center;
+    padding: 28px 16px 20px;
+  }
+  .header h1 {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media(max-width: 480px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .field input, .field select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+  }
+  .field input[type="number"] { -moz-appearance: textfield; }
+  .field input[type="number"]::-webkit-outer-spin-button,
+  .field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .toggle-group {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .toggle-group button {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid var(--border);
+  }
+  .toggle-group button:last-child { border-right: none; }
+  .toggle-group button.active {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-calc {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+  .btn-calc:active { transform: scale(0.98); opacity: 0.9; }
+
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .marketplace-result {
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 12px;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .marketplace-result::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .ml-premium { border-color: rgba(255,230,0,0.3); background: rgba(255,230,0,0.04); }
+  .ml-premium::before { background: var(--ml-color); }
+  .ml-classico { border-color: rgba(255,230,0,0.2); background: rgba(255,230,0,0.02); }
+  .ml-classico::before { background: rgba(255,230,0,0.5); }
+  .shopee-res { border-color: rgba(255,87,34,0.3); background: rgba(255,87,34,0.04); }
+  .shopee-res::before { background: var(--shopee-color); }
+
+  .mp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .mp-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-best {
+    background: var(--green);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    display: none;
+  }
+  .badge-best.show { display: inline-block; }
+
+  .mp-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media(min-width: 500px) {
+    .mp-metrics { grid-template-columns: repeat(4, 1fr); }
+  }
+  .metric {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .metric-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.yellow { color: var(--ml-color); }
+  .metric-value.blue { color: var(--blue); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+
+  .alert {
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    color: var(--red);
+    margin-top: 12px;
+    display: none;
+  }
+  .alert.show { display: block; }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+    font-family: 'DM Mono', monospace;
+  }
+  .info-row span:last-child { color: var(--text); }
+
+  .section-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
+
+  .peso-info {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    display: none;
+  }
+  .peso-info.show { display: block; }
+  .peso-info strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Calculadora de Precificação</h1>
+  <p>ML + Shopee · Vigência: 01/03/2026 · Simples Nacional</p>
+</div>
+
+<!-- DADOS DO PRODUTO -->
+<div class="card">
+  <div class="card-title">📦 Dados do Produto</div>
+  <div class="grid2">
+    <div class="field">
+      <label>Custo do Produto (R$)</label>
+      <input type="number" id="custo" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>Custo de Embalagem (R$)</label>
+      <input type="number" id="embalagem" placeholder="0,00" step="0.01" min="0" value="0">
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="field">
+      <label>Regime Tributário</label>
+      <div class="toggle-group" id="toggleTributo">
+        <button class="active" onclick="setTributo('comST')">Com ST (8,2%)</button>
+        <button onclick="setTributo('semST')">Sem ST (11,3%)</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Margem Desejada (%)</label>
+      <input type="number" id="margem" placeholder="15" step="0.5" min="0" max="99" value="15">
+    </div>
+  </div>
+</div>
+
+<!-- PESO E DIMENSÕES -->
+<div class="card">
+  <div class="card-title">⚖️ Peso e Dimensões</div>
+  <div class="grid2">
+    <div class="field">
+      <label>Peso Real (kg)</label>
+      <input type="number" id="pesoReal" placeholder="0,000" step="0.001" min="0" oninput="calcPesoVol()">
+    </div>
+    <div class="field">
+      <label>TACOS / Ads (%)</label>
+      <input type="number" id="tacos" placeholder="0" step="0.5" min="0" value="0">
+    </div>
+  </div>
+  <div class="section-label" style="margin-top:14px">Peso Volumétrico (para calcular automático)</div>
+  <div class="grid3">
+    <div class="field">
+      <label>Altura (cm)</label>
+      <input type="number" id="altura" placeholder="0" step="1" min="0" oninput="calcPesoVol()">
+    </div>
+    <div class="field">
+      <label>Largura (cm)</label>
+      <input type="number" id="largura" placeholder="0" step="1" min="0" oninput="calcPesoVol()">
+    </div>
+    <div class="field">
+      <label>Comprimento (cm)</label>
+      <input type="number" id="comprimento" placeholder="0" step="1" min="0" oninput="calcPesoVol()">
+    </div>
+  </div>
+  <div class="peso-info" id="pesoInfo"></div>
+</div>
+
+<!-- SHOPEE -->
+<div class="card">
+  <div class="card-title">🟠 Configuração Shopee</div>
+  <div class="grid2">
+    <div class="field">
+      <label>Taxa Fixa Shopee (R$)</label>
+      <input type="number" id="shopeeFixa" placeholder="5.41" step="0.01" min="0" value="5.41">
+    </div>
+    <div class="field">
+      <label>% Taxa Variável Shopee</label>
+      <input type="number" id="shopeeVar" placeholder="Automático" step="0.1" min="0" id="shopeeVarInput">
+      <small style="color:var(--muted);font-size:0.68rem;">Automático por faixa (abaixo/acima de R$79)</small>
+    </div>
+  </div>
+</div>
+
+<button class="btn-calc" onclick="calcular()">CALCULAR PREÇO DE VENDA</button>
+
+<!-- RESULTADOS -->
+<div class="results" id="results">
+  <hr class="divider">
+
+  <div class="card-title" style="padding: 4px 0 12px; font-size:0.7rem; letter-spacing:1.5px; color:var(--muted)">
+    📊 RESULTADOS — PREÇO MÍNIMO COM {{margem}}% DE MARGEM
+  </div>
+
+  <!-- ML PREMIUM -->
+  <div class="marketplace-result ml-premium">
+    <div class="mp-header">
+      <div class="mp-name" style="color:var(--ml-color)">🟡 ML PREMIUM (17%)</div>
+      <span class="badge-best" id="badgeMLP">MELHOR PREÇO</span>
+    </div>
+    <div class="mp-metrics">
+      <div class="metric">
+        <div class="metric-label">Taxa Frete (ML)</div>
+        <div class="metric-value yellow" id="mlpFreteVal">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Preço de Venda</div>
+        <div class="metric-value blue" id="mlpVenda">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Margem Real</div>
+        <div class="metric-value green" id="mlpMargem">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Lucro R$</div>
+        <div class="metric-value green" id="mlpLucro">—</div>
+      </div>
+    </div>
+    <div class="info-row"><span>Comissão ML</span><span id="mlpComissao">—</span></div>
+    <div class="info-row"><span>Imposto (Simples)</span><span id="mlpImposto">—</span></div>
+    <div class="info-row"><span>CMV Total</span><span id="mlpCMV">—</span></div>
+  </div>
+
+  <!-- ML CLÁSSICO -->
+  <div class="marketplace-result ml-classico">
+    <div class="mp-header">
+      <div class="mp-name" style="color:rgba(255,230,0,0.7)">🟡 ML CLÁSSICO (12%)</div>
+      <span class="badge-best" id="badgeMLC">MELHOR PREÇO</span>
+    </div>
+    <div class="mp-metrics">
+      <div class="metric">
+        <div class="metric-label">Taxa Frete (ML)</div>
+        <div class="metric-value yellow" id="mlcFreteVal">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Preço de Venda</div>
+        <div class="metric-value blue" id="mlcVenda">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Margem Real</div>
+        <div class="metric-value green" id="mlcMargem">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Lucro R$</div>
+        <div class="metric-value green" id="mlcLucro">—</div>
+      </div>
+    </div>
+    <div class="info-row"><span>Comissão ML</span><span id="mlcComissao">—</span></div>
+    <div class="info-row"><span>Imposto (Simples)</span><span id="mlcImposto">—</span></div>
+    <div class="info-row"><span>CMV Total</span><span id="mlcCMV">—</span></div>
+  </div>
+
+  <!-- SHOPEE -->
+  <div class="marketplace-result shopee-res">
+    <div class="mp-header">
+      <div class="mp-name" style="color:var(--shopee-color)">🟠 SHOPEE</div>
+      <span class="badge-best" id="badgeSHO">MELHOR PREÇO</span>
+    </div>
+    <div class="mp-metrics">
+      <div class="metric">
+        <div class="metric-label">Tx Fixa Shopee</div>
+        <div class="metric-value" style="color:var(--shopee-color)" id="shoFreteVal">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Preço de Venda</div>
+        <div class="metric-value blue" id="shoVenda">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Margem Real</div>
+        <div class="metric-value green" id="shoMargem">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Lucro R$</div>
+        <div class="metric-value green" id="shoLucro">—</div>
+      </div>
+    </div>
+    <div class="info-row"><span>% Shopee aplicado</span><span id="shoPerc">—</span></div>
+    <div class="info-row"><span>Imposto (Simples)</span><span id="shoImposto">—</span></div>
+    <div class="info-row"><span>CMV Total</span><span id="shoCMV">—</span></div>
+  </div>
+
+  <div class="alert" id="alertMsg"></div>
+</div>
+
+<script>
+// =========================================
+// TABELA DE FRETE ML (peso máx → frete por faixa de preço)
+// Colunas de preço: 0, 19, 49, 79, 100, 120, 150, 200
+// =========================================
+const ML_FRETE = [
+  { max: 0.300, fretes: [5.65, 6.55, 7.75, 12.35, 14.35, 16.45, 18.45, 20.95] },
+  { max: 0.500, fretes: [5.95, 6.65, 7.85, 13.25, 15.45, 17.65, 19.85, 22.55] },
+  { max: 1.000, fretes: [6.05, 6.75, 7.95, 13.85, 16.15, 18.45, 20.75, 23.65] },
+  { max: 1.500, fretes: [6.15, 6.85, 8.05, 14.15, 16.45, 18.85, 21.15, 24.65] },
+  { max: 2.000, fretes: [6.25, 6.95, 8.15, 14.45, 16.85, 19.25, 21.65, 24.65] },
+  { max: 3.000, fretes: [6.35, 7.95, 8.55, 15.75, 18.35, 21.05, 23.65, 26.25] },
+  { max: 4.000, fretes: [6.45, 8.15, 8.95, 17.05, 19.85, 22.65, 25.55, 28.35] },
+  { max: 5.000, fretes: [6.55, 8.35, 9.75, 18.45, 21.55, 24.65, 27.75, 30.75] },
+  { max: 6.000, fretes: [6.65, 8.55, 9.95, 25.45, 28.55, 32.65, 35.75, 39.75] },
+  { max: 7.000, fretes: [6.75, 8.75, 10.15, 27.05, 31.05, 36.05, 40.05, 44.05] },
+  { max: 8.000, fretes: [6.85, 8.95, 10.35, 28.85, 33.65, 38.45, 43.25, 48.05] },
+  { max: 9.000, fretes: [6.95, 9.15, 10.55, 29.65, 34.55, 39.55, 44.45, 49.35] },
+  { max: 11.000, fretes: [7.05, 9.55, 10.95, 41.25, 48.05, 54.95, 61.75, 68.65] },
+  { max: 13.000, fretes: [7.15, 9.95, 11.35, 42.15, 49.25, 56.25, 63.25, 70.25] },
+  { max: 15.000, fretes: [7.25, 10.15, 11.55, 45.05, 52.45, 59.95, 67.45, 74.95] },
+  { max: 17.000, fretes: [7.35, 10.35, 11.75, 48.55, 56.05, 63.55, 70.75, 78.65] },
+  { max: 20.000, fretes: [7.45, 10.55, 11.95, 54.75, 63.85, 72.95, 82.05, 91.15] },
+  { max: 25.000, fretes: [7.65, 10.95, 12.15, 64.05, 75.05, 84.75, 95.35, 105.95] },
+  { max: 30.000, fretes: [7.75, 11.15, 12.35, 65.95, 75.45, 85.55, 96.25, 106.95] },
+  { max: 40.000, fretes: [7.85, 11.35, 12.55, 67.75, 78.95, 88.95, 99.15, 107.05] },
+  { max: 50.000, fretes: [7.95, 11.55, 12.75, 70.25, 81.05, 92.05, 102.55, 110.75] },
+  { max: 60.000, fretes: [8.05, 11.75, 12.95, 74.95, 86.45, 98.15, 109.35, 118.15] },
+  { max: 70.000, fretes: [8.15, 11.95, 13.15, 80.25, 92.95, 105.05, 117.15, 126.55] },
+  { max: 80.000, fretes: [8.25, 12.15, 13.35, 83.95, 97.05, 109.85, 122.45, 132.25] },
+  { max: 90.000, fretes: [8.35, 12.35, 13.55, 93.25, 107.45, 122.05, 136.05, 146.95] },
+  { max: 100.000, fretes: [8.45, 12.55, 13.75, 106.55, 123.95, 139.55, 155.55, 167.95] },
+  { max: 125.000, fretes: [8.55, 12.75, 13.95, 119.25, 138.05, 156.05, 173.95, 187.95] },
+  { max: 150.000, fretes: [8.65, 12.75, 14.15, 126.55, 146.15, 165.65, 184.65, 199.45] },
+  { max: Infinity, fretes: [8.75, 12.75, 14.35, 166.15, 192.45, 217.55, 242.55, 261.95] },
+];
+
+// Limites de preço para coluna de frete
+const ML_PRECO_COLS = [0, 19, 49, 79, 100, 120, 150, 200];
+
+let tributacao = 'comST'; // 'comST' = 8.2%, 'semST' = 11.3%
+
+function setTributo(tipo) {
+  tributacao = tipo;
+  document.querySelectorAll('#toggleTributo button').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tipo === 'comST') || (i === 1 && tipo === 'semST'));
+  });
+}
+
+function getAliquota() {
+  return tributacao === 'comST' ? 0.082 : 0.113;
+}
+
+function calcPesoVol() {
+  const h = parseFloat(document.getElementById('altura').value) || 0;
+  const l = parseFloat(document.getElementById('largura').value) || 0;
+  const c = parseFloat(document.getElementById('comprimento').value) || 0;
+  const pesoReal = parseFloat(document.getElementById('pesoReal').value) || 0;
+
+  const info = document.getElementById('pesoInfo');
+
+  if (h > 0 && l > 0 && c > 0) {
+    const pesoVol = (h * l * c) / 6000;
+    const pesoConsiderado = Math.max(pesoReal, pesoVol);
+    info.classList.add('show');
+    info.innerHTML = `Peso volumétrico: <strong>${pesoVol.toFixed(3)} kg</strong> &nbsp;|&nbsp; Peso real: <strong>${pesoReal.toFixed(3)} kg</strong> &nbsp;|&nbsp; ✅ ML considera: <strong>${pesoConsiderado.toFixed(3)} kg</strong>`;
+  } else {
+    info.classList.remove('show');
+  }
+}
+
+function getMLFrete(pesoKg, precoVenda) {
+  // Acha linha de peso
+  let linha = ML_FRETE[ML_FRETE.length - 1];
+  for (let f of ML_FRETE) {
+    if (pesoKg <= f.max) { linha = f; break; }
+  }
+  // Acha coluna de preço (maior coluna que precoVenda >= limite)
+  let colIdx = 0;
+  for (let i = ML_PRECO_COLS.length - 1; i >= 0; i--) {
+    if (precoVenda >= ML_PRECO_COLS[i]) { colIdx = i; break; }
+  }
+  return linha.fretes[colIdx];
+}
+
+function getPesoConsiderado() {
+  const h = parseFloat(document.getElementById('altura').value) || 0;
+  const l = parseFloat(document.getElementById('largura').value) || 0;
+  const c = parseFloat(document.getElementById('comprimento').value) || 0;
+  const pesoReal = parseFloat(document.getElementById('pesoReal').value) || 0;
+  if (h > 0 && l > 0 && c > 0) {
+    const pesoVol = (h * l * c) / 6000;
+    return Math.max(pesoReal, pesoVol);
+  }
+  return pesoReal;
+}
+
+// Resolve referência circular com iteração
+// Preço = (CMV + TaxaFixa) / (1 - %comissao - %imposto - %margem - %tacos)
+// Mas TaxaFixa (frete ML) depende do preço → iteramos
+function calcVendaML(cmv, comissaoPerc, aliquota, taxaFixaInicial, margemPerc, tacosPerc, peso) {
+  let venda = taxaFixaInicial / (1 - comissaoPerc - aliquota - margemPerc - tacosPerc) + cmv / (1 - comissaoPerc - aliquota - margemPerc - tacosPerc);
+  // Iterar até convergir
+  for (let i = 0; i < 50; i++) {
+    const frete = getMLFrete(peso, venda);
+    const novoVenda = (cmv + frete) / (1 - comissaoPerc - aliquota - margemPerc - tacosPerc);
+    if (Math.abs(novoVenda - venda) < 0.001) { venda = novoVenda; break; }
+    venda = novoVenda;
+  }
+  return venda;
+}
+
+// Shopee: taxa varia por faixa de preço (abaixo/acima de R$79)
+// Taxa shopee varia: se preço < 79 → percentual menor; se >= 79 → maior
+// Conforme planilha: tx total shopee ≈ 5.408... → usa faixa
+// Vamos usar as faixas Shopee:
+// < R$79: aliquota shopee menor (aprox 16.9% conforme planilha original ML_FRETE value 5.41/venda)
+// >= R$79: aliquota shopee 20% (conforme vídeo)
+// Na planilha: TxTotal = 5.408450704... / 7.042... = 0.768 → % shopee ~20% + fixa
+// Interpretação: Shopee cobra fixa + percentual sobre venda
+// Preço < 79: % shopee = 16% aprox | >= 79: % shopee = 20%
+function calcVendaShopee(cmv, aliquota, taxaFixa, margemPerc, tacosPerc) {
+  // Tenta abaixo de 79 primeiro
+  const percAbaixo = 0.16;
+  const percAcima = 0.20;
+
+  // Iteração para resolver circularidade da faixa
+  let venda = (cmv + taxaFixa) / (1 - percAbaixo - aliquota - margemPerc - tacosPerc);
+  let perc = venda < 79 ? percAbaixo : percAcima;
+
+  for (let i = 0; i < 50; i++) {
+    const novoPerc = venda < 79 ? percAbaixo : percAcima;
+    const novoVenda = (cmv + taxaFixa) / (1 - novoPerc - aliquota - margemPerc - tacosPerc);
+    if (Math.abs(novoVenda - venda) < 0.001 && novoPerc === perc) { venda = novoVenda; break; }
+    venda = novoVenda;
+    perc = novoPerc;
+  }
+  return { venda, perc };
+}
+
+function brl(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+function pct(v) { return (v * 100).toFixed(1) + '%'; }
+
+function calcular() {
+  const custo = parseFloat(document.getElementById('custo').value) || 0;
+  const embalagem = parseFloat(document.getElementById('embalagem').value) || 0;
+  const margemPerc = (parseFloat(document.getElementById('margem').value) || 15) / 100;
+  const tacosPerc = (parseFloat(document.getElementById('tacos').value) || 0) / 100;
+  const shopeeFixa = parseFloat(document.getElementById('shopeeFixa').value) || 5.41;
+  const aliquota = getAliquota();
+  const peso = getPesoConsiderado();
+
+  if (custo <= 0) {
+    alert('Informe o custo do produto!');
+    return;
+  }
+
+  const cmv = custo + embalagem;
+
+  // === ML PREMIUM (17%) ===
+  const vendaMLP = calcVendaML(cmv, 0.17, aliquota, 5.65, margemPerc, tacosPerc, peso);
+  const freteMLP = getMLFrete(peso, vendaMLP);
+  const comissaoMLP = vendaMLP * 0.17;
+  const impostoMLP = vendaMLP * aliquota;
+  const lucroMLP = vendaMLP - cmv - freteMLP - comissaoMLP - impostoMLP - vendaMLP * tacosPerc;
+  const margemRealMLP = lucroMLP / vendaMLP;
+
+  // === ML CLÁSSICO (12%) ===
+  const vendaMLC = calcVendaML(cmv, 0.12, aliquota, 5.65, margemPerc, tacosPerc, peso);
+  const freteMLC = getMLFrete(peso, vendaMLC);
+  const comissaoMLC = vendaMLC * 0.12;
+  const impostoMLC = vendaMLC * aliquota;
+  const lucroMLC = vendaMLC - cmv - freteMLC - comissaoMLC - impostoMLC - vendaMLC * tacosPerc;
+  const margemRealMLC = lucroMLC / vendaMLC;
+
+  // === SHOPEE ===
+  const { venda: vendaSHO, perc: percSHO } = calcVendaShopee(cmv, aliquota, shopeeFixa, margemPerc, tacosPerc);
+  const comissaoSHO = vendaSHO * percSHO;
+  const impostoSHO = vendaSHO * aliquota;
+  const lucroSHO = vendaSHO - cmv - shopeeFixa - comissaoSHO - impostoSHO - vendaSHO * tacosPerc;
+  const margemRealSHO = lucroSHO / vendaSHO;
+
+  // Atualiza título
+  document.querySelector('.card-title:last-of-type') && null;
+
+  // Preenche ML Premium
+  document.getElementById('mlpFreteVal').textContent = brl(freteMLP);
+  document.getElementById('mlpVenda').textContent = brl(vendaMLP);
+  document.getElementById('mlpMargem').textContent = pct(margemRealMLP);
+  document.getElementById('mlpLucro').textContent = brl(lucroMLP);
+  document.getElementById('mlpComissao').textContent = brl(comissaoMLP) + ' (17%)';
+  document.getElementById('mlpImposto').textContent = brl(impostoMLP) + ' (' + pct(aliquota) + ')';
+  document.getElementById('mlpCMV').textContent = brl(cmv);
+
+  // Preenche ML Clássico
+  document.getElementById('mlcFreteVal').textContent = brl(freteMLC);
+  document.getElementById('mlcVenda').textContent = brl(vendaMLC);
+  document.getElementById('mlcMargem').textContent = pct(margemRealMLC);
+  document.getElementById('mlcLucro').textContent = brl(lucroMLC);
+  document.getElementById('mlcComissao').textContent = brl(comissaoMLC) + ' (12%)';
+  document.getElementById('mlcImposto').textContent = brl(impostoMLC) + ' (' + pct(aliquota) + ')';
+  document.getElementById('mlcCMV').textContent = brl(cmv);
+
+  // Preenche Shopee
+  document.getElementById('shoFreteVal').textContent = brl(shopeeFixa);
+  document.getElementById('shoVenda').textContent = brl(vendaSHO);
+  document.getElementById('shoMargem').textContent = pct(margemRealSHO);
+  document.getElementById('shoLucro').textContent = brl(lucroSHO);
+  document.getElementById('shoPerc').textContent = pct(percSHO) + (vendaSHO < 79 ? ' (abaixo R$79)' : ' (acima R$79)');
+  document.getElementById('shoImposto').textContent = brl(impostoSHO) + ' (' + pct(aliquota) + ')';
+  document.getElementById('shoCMV').textContent = brl(cmv);
+
+  // Badge melhor preço (menor preço de venda)
+  const vendas = [vendaMLP, vendaMLC, vendaSHO];
+  const menor = Math.min(...vendas);
+  document.getElementById('badgeMLP').classList.toggle('show', vendaMLP === menor);
+  document.getElementById('badgeMLC').classList.toggle('show', vendaMLC === menor);
+  document.getElementById('badgeSHO').classList.toggle('show', vendaSHO === menor);
+
+  // Alerta se margem negativa
+  const alert = document.getElementById('alertMsg');
+  if (lucroMLP < 0 || lucroMLC < 0 || lucroSHO < 0) {
+    alert.textContent = '⚠️ Atenção: com a margem desejada, o preço calculado pode ser inviável para alguns marketplaces. Revise os custos ou reduza a margem.';
+    alert.classList.add('show');
+  } else {
+    alert.classList.remove('show');
+  }
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
